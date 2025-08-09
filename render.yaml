@@ -21,3 +21,8 @@ services:
     name: quake-redis
     plan: free
     maxmemoryPolicy: allkeys-lru
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: allow all IPv4 (tighten later)
+      - source: ::/0
+        description: allow all IPv6 (tighten later)
