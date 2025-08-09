@@ -5,7 +5,13 @@ Ingests USGS earthquakes (last hour) into Redis and serves a live dashboard:
 - Magnitude histogram and quakes-per-minute
 - Top regions by activity (rolling 60 minutes)
 
-## Quick start
+## Features
+- Real-time ingest from USGS feed with dedupe and per-minute bucketing
+- Live UI with Leaflet and Chart.js, WebSockets for streaming updates
+- Rolling 15m/60m leaderboards and histograms computed in Redis
+- Observability: health checks, structured logs, Prometheus metrics
+
+## Quick start (local)
 1. Start Redis:
 ```powershell
 docker compose up -d
@@ -22,6 +28,12 @@ npm start
 - `PORT` (default `3000`)
 - `USGS_POLL_MS` (default `15000`)
 
+## Architecture
+- Ingestor: polls USGS, dedupes by id, writes to `stream:quakes`, maintains per-minute counters, region zsets, and mag histogram buckets
+- Aggregator: periodically rolls up last 15/60 minute keys into leaderboards and histograms
+- Web server: Express + WebSocket; serves REST for initial state and pushes live quake events
+- Frontend: Leaflet map, charts, and leaderboards with a selectable time window
+
 ## Redis keys
 - `stream:quakes` fields: `id, mag, place, lat, lon, ts`
 - `list:recent_quakes` latest 200
@@ -37,17 +49,38 @@ npm start
 - `GET /healthz` – health check
 - `GET /metrics` – Prometheus metrics
 
+## Observability
+- Logs: pino structured logging via `pino-http`
+- Metrics (Prometheus):
+  - `http_request_duration_seconds` labeled by method, route, status
+  - `ingest_events_total`, `ingest_new_events_total`
+  - `ingest_lag_seconds` (event age vs processing time)
+  - `ws_connections` (current WebSocket clients)
+- Verify locally at `http://localhost:3000/metrics`
+
 ## Deploy on Render
-Option A — One-click blueprint
+Option A — Blueprint (recommended)
 1. Push this repo to GitHub
-2. On Render, click New > Blueprint and select your repo
-3. Accept the `render.yaml` defaults; Render will create a free web service and a free Redis instance and auto-wire `REDIS_URL`
+2. In Render: New → Blueprint → select your repo
+3. Confirm branch `main` and apply. The provided `render.yaml` will create:
+   - Web service `quake-dashboard`
+   - Managed Redis `quake-redis` with `REDIS_URL` auto-wired
+4. After deploy, open your URL and verify `/healthz` and `/metrics`
 
 Option B — Manual
-1. Create a new Web Service on Render from this repo
-2. Set Build Command: `npm install`
-3. Set Start Command: `npm start`
-4. Add Environment Variable `REDIS_URL` pointing to a Render Redis or any hosted Redis
-5. Optional: set `USGS_POLL_MS` to 15000
+1. Create a new Web Service from this repo
+2. Build Command: `npm install`
+3. Start Command: `npm start`
+4. Add env var `REDIS_URL` pointing to your Redis
+5. Optional: set `USGS_POLL_MS=15000`
 
-After deploy, open the service URL and verify `/healthz` and `/metrics`.
+Notes for Render
+- Free web services auto-suspend when idle. First request wakes them; the initial request may take 20–60s. While suspended the ingestor is paused; Redis remains up.
+- To keep ingest always-on, upgrade the plan or split the ingestor into a Worker service.
+- The blueprint sets Redis `ipAllowList` to `0.0.0.0/0` for convenience. For production, restrict this to your web service or trusted IPs.
+
+## Screenshots
+- Live map, per-minute chart, magnitude histogram, and top regions (see `public/`)
+
+## License
+MIT
