@@ -1,5 +1,7 @@
 # Real-Time Earthquake Analytics (USGS + Redis)
 
+Live demo: [quake-dashboard.onrender.com](https://quake-dashboard.onrender.com/)
+
 Ingests USGS earthquakes (last hour) into Redis and serves a live dashboard:
 - Live quake map and recent list
 - Magnitude histogram and quakes-per-minute
@@ -58,7 +60,7 @@ npm start
   - `ws_connections` (current WebSocket clients)
 - Verify locally at `http://localhost:3000/metrics`
 
-## Deploy on Render
+## Self-host on Render
 Option A — Blueprint (recommended)
 1. Push this repo to GitHub
 2. In Render: New → Blueprint → select your repo
