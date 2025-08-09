@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: quake-dashboard
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: quake-redis
+          property: connectionString
+      - key: USGS_POLL_MS
+        value: 15000
+  - type: redis
+    name: quake-redis
+    plan: free
+    maxmemoryPolicy: allkeys-lru

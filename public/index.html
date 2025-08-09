@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Real-Time Earthquakes</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="topbar"></div>
+  <header class="container">
+    <div class="header-row">
+      <div>
+        <h1>Real-Time Earthquake Analytics</h1>
+        <p>USGS • Redis Streams • WebSockets</p>
+      </div>
+      <div class="controls">
+        <label class="control">Window
+          <select id="window-select">
+            <option value="15">last 15m</option>
+            <option value="60" selected>last 60m</option>
+          </select>
+        </label>
+        <div class="stat">
+          <span class="stat-label">Total (<span id="win-label-2">last 60m</span>)</span>
+          <span class="stat-value" id="total-count">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Last update</span>
+          <span class="stat-value" id="last-update">—</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container layout">
+    <section class="card map-card">
+      <div id="map"></div>
+      <div class="recent card-sub">
+        <h3>Recent quakes</h3>
+        <ul id="recent-list" class="recent-list"></ul>
+      </div>
+    </section>
+
+    <section class="cards">
+      <div class="card">
+        <h3>Quakes per minute (last 60m)</h3>
+        <canvas id="perMinuteChart"></canvas>
+      </div>
+      <div class="card">
+        <h3>Magnitude histogram (<span id="win-label-1">last 60m</span>)</h3>
+        <canvas id="histChart"></canvas>
+      </div>
+      <div class="card">
+        <h3>Top regions (<span id="regions-window">last 60m</span>)</h3>
+        <ol id="regions-list" class="regions"></ol>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
